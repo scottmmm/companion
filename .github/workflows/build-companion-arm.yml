@@ -20,6 +20,11 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '22.21.1'
+    
+    - name: Install build dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential libudev-dev libusb-1.0-0-dev
         
     - name: Enable corepack
       run: corepack enable
