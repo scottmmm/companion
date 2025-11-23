@@ -19,46 +19,37 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '22.21.1'
         
     - name: Enable corepack
       run: corepack enable
         
-    - name: Install dependencies (root)
+    - name: Install dependencies
       run: yarn install
-      working-directory: .
-      env:
-        CI: true
-      
-    - name: Install dependencies (companion)
-      run: yarn install
-      working-directory: ./companion
       env:
         CI: true
       
     - name: Build Companion for ARM64
-      run: yarn dist:electron --linux --arm64
-      working-directory: ./companion
+      run: yarn dist linux-arm64
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         CI: true
         
     - name: List built files
       run: |
-        echo "Contents of electron-output:"
-        ls -lah ./companion/electron-output/ || echo "electron-output not found"
-        find ./companion -name "*.AppImage" -o -name "*.deb" -o -name "*.tar.gz" || echo "No packages found"
+        echo "Searching for built packages..."
+        find . -type f \( -name "*.AppImage" -o -name "*.deb" -o -name "*.tar.gz" \) 2>/dev/null || echo "No packages found"
         
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: companion-linux-arm64
         path: |
-          companion/electron-output/*.AppImage
-          companion/electron-output/*.deb
-          companion/electron-output/*.tar.gz
-          companion/electron-output/**/*.AppImage
-          companion/electron-output/**/*.deb
-          companion/electron-output/**/*.tar.gz
+          dist/**/*.AppImage
+          dist/**/*.deb
+          dist/**/*.tar.gz
+          electron-output/**/*.AppImage
+          electron-output/**/*.deb
+          electron-output/**/*.tar.gz
         retention-days: 30
         if-no-files-found: warn
