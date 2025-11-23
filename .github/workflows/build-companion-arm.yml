@@ -71,7 +71,14 @@ jobs:
       if: always()
       run: |
         echo "Searching for built packages..."
-        find . -type f \( -name "*.deb" -o -name "*.tar.gz" -o -name "*.AppImage" \) -exec ls -lh {} \;
+        echo "=== Contents of dist folder ==="
+        ls -lhR dist/ || echo "dist folder not found"
+        echo ""
+        echo "=== Looking for tar.gz files specifically ==="
+        find dist/ -name "*.tar.gz" -type f -exec ls -lh {} \; 2>/dev/null || echo "No tar.gz found"
+        echo ""
+        echo "=== Looking for all package files ==="
+        find . -path ./.cache -prune -o -type f \( -name "companion-*.tar.gz" -o -name "companion-*.deb" -o -name "companion-*.AppImage" \) -print -exec ls -lh {} \;
         
     - name: Upload artifacts
       if: always()
@@ -79,11 +86,11 @@ jobs:
       with:
         name: companion-linux-arm64
         path: |
-          dist/**/*.AppImage
-          dist/**/*.deb
+          dist/*.tar.gz
           dist/**/*.tar.gz
-          electron-output/**/*.AppImage
-          electron-output/**/*.deb
-          electron-output/**/*.tar.gz
+          dist/*.deb
+          dist/**/*.deb
+          dist/*.AppImage
+          dist/**/*.AppImage
         retention-days: 30
         if-no-files-found: warn
