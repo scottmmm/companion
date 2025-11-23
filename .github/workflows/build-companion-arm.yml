@@ -27,7 +27,7 @@ jobs:
     - name: Install dependencies
       run: yarn install
       env:
-        CI: true
+        YARN_ENABLE_IMMUTABLE_INSTALLS: false
       
     - name: Build Companion for ARM64
       run: yarn dist linux-arm64
