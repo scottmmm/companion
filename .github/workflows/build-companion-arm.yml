@@ -23,11 +23,12 @@ jobs:
         
     - name: Enable corepack
       run: corepack enable
+    
+    - name: Remove lockfile to allow regeneration
+      run: rm -f yarn.lock
         
     - name: Install dependencies
       run: yarn install
-      env:
-        YARN_ENABLE_IMMUTABLE_INSTALLS: false
       
     - name: Build Companion for ARM64
       run: yarn dist linux-arm64
