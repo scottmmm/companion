@@ -1,0 +1,64 @@
+name: Build Companion ARM64
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    
+    steps:
+    - name: Checkout companion
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Enable corepack
+      run: corepack enable
+        
+    - name: Install dependencies (root)
+      run: yarn install
+      working-directory: .
+      env:
+        CI: true
+      
+    - name: Install dependencies (companion)
+      run: yarn install
+      working-directory: ./companion
+      env:
+        CI: true
+      
+    - name: Build Companion for ARM64
+      run: yarn dist:electron --linux --arm64
+      working-directory: ./companion
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        CI: true
+        
+    - name: List built files
+      run: |
+        echo "Contents of electron-output:"
+        ls -lah ./companion/electron-output/ || echo "electron-output not found"
+        find ./companion -name "*.AppImage" -o -name "*.deb" -o -name "*.tar.gz" || echo "No packages found"
+        
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: companion-linux-arm64
+        path: |
+          companion/electron-output/*.AppImage
+          companion/electron-output/*.deb
+          companion/electron-output/*.tar.gz
+          companion/electron-output/**/*.AppImage
+          companion/electron-output/**/*.deb
+          companion/electron-output/**/*.tar.gz
+        retention-days: 30
+        if-no-files-found: warn
