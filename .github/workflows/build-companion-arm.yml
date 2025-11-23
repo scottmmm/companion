@@ -24,11 +24,19 @@ jobs:
     - name: Enable corepack
       run: corepack enable
     
+    - name: Check for .yarnrc.yml and modify if needed
+      run: |
+        if [ -f .yarnrc.yml ]; then
+          echo "Found .yarnrc.yml, removing immutable setting..."
+          sed -i '/enableImmutableInstalls/d' .yarnrc.yml
+          cat .yarnrc.yml
+        fi
+    
     - name: Remove lockfile to allow regeneration
       run: rm -f yarn.lock
         
     - name: Install dependencies
-      run: yarn install
+      run: yarn install --no-immutable
       
     - name: Build Companion for ARM64
       run: yarn dist linux-arm64
